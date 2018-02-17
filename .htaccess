@@ -1,0 +1,6 @@
+# Routing for apache compatible daemons
+
+DirectorySlash Off
+RewriteEngine On
+
+RewriteRule ^(.*)$ /vendor/phoxy/route/run.php [L,END,QSA]
