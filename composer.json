@@ -1,0 +1,5 @@
+{
+    "require": {
+        "enelar/phpa2o": "^0.1.3"
+    }
+}

@@ -12,4 +12,6 @@ function handle($obj)
     foreach ($obj['failed'] as $file)
       header_log($file);
   }
+
+  route($obj);
 }
