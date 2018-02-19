@@ -24,10 +24,10 @@ function load_config($file_list = [])
       continue;
     }
 
-    $result = array_replace_reqursive($result, $obj);
+    $result = array_replace_recursive($result, $obj);
   }
 
   $result = array_replace($result, $status);
 
-  return $result;
+  return new \phpa2o\phpa2o($result);
 }
