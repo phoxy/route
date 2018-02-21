@@ -79,20 +79,19 @@ function route($obj)
 
     if ($rule->rewrite)
     {
-      $route = preg_replace("/^.*?$regexp.*?$/", $rule->rewrite, $route);
+      $route = preg_replace($regexp, $rule->rewrite, $route);
       internal\header_rule_log($k, "rewrite to", $route);
     }
 
-    if ($rule->found)
+    if ($location = $rule->found ? $rule->found : $rule->redirect)
     {
-      $route = preg_replace("$regexp", $rule->found, $route);
-      internal\header_rule_log($k, "found at", $route);
+      $route = preg_replace($regexp, $location, $route);
+      internal\header_rule_log($k, "redirect to", $route);
 
-      header("HTTP/1.1 307 Found there, use your cache if you could");
       header("Location: $route");
+      $rule->http_code = $rule->found ? "307 Found" : "301 Redirect";
       $rule->die = true;
     }
-
 
 
     if ($rule->forbid)
