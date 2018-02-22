@@ -16,39 +16,98 @@ function route($obj)
 {
   $request = parse($_SERVER['REQUEST_URI']);
   $route = $request->url;
+  $get = $request->get->__2array();
 
   header_log('initial data', $route);
   header_log('executing against', count($obj->rules), 'rules');
 
-  foreach ($obj->rules as $k => $rule)
+  foreach ($obj->rules as $i => $rule)
   {
     $regexp = $rule->regexp;
 
     if (empty($regexp))
     {
-      internal\header_rule_log($k, "empty regexp");
+      internal\header_rule_log($i, "empty regexp");
       continue;
     }
 
     if ($regexp[0] != '/')
       $regexp = "/$regexp/";
-    $res = preg_match("$regexp", $route, $matches);
+    $res = preg_match($regexp, $route, $matches);
 
     if ($res === false)
     {
-      internal\header_rule_log($k, "regexp syntax error", $regexp);
+      internal\header_rule_log($i, "regexp syntax error", $rule->regexp);
       header_log('inconsistent configuration');
-      echo "Issue in phoxy/route rule $k";
+      echo "Issue in phoxy/route rule $i";
       die();
     }
 
     if (!$res)
     {
-      internal\header_rule_log($k, "doesn't fit", $regexp);
+      internal\header_rule_log($i, "doesn't fit", $rule->regexp);
       continue;
     }
 
-    internal\header_rule_log($k, "matched", $regexp);
+    internal\header_rule_log($i, "matched", $rule->regexp);
+
+    if ($rule->agent)
+    {
+      $agent_match = preg_match($rule->agent, $_SERVER['HTTP_USER_AGENT'], $agent_match);
+
+      if ($agent_match === false)
+      {
+        internal\header_rule_log($i, "regexp issue in user agent");
+        header_log('inconsistent configuration');
+        echo "Issue in phoxy/route rule $i";
+        die();
+      }
+
+      if ($agent_match)
+        internal\header_rule_log($i, "user agent matched");
+      else
+      {
+        internal\header_rule_log($i, "user agent doesnt match");
+        continue;
+      }
+    }
+
+    if ($rule->get)
+    {
+      parse_str($rule->get, $variables);
+
+      $match = 0;
+      foreach ($variables as $k => $v)
+      {
+        foreach ($get as $_k => $_v)
+          if (preg_match("/^$k$/", $_k) > 0 && preg_match("/^$v$/", $_v) > 0)
+          {
+            $match++;
+            break;
+          }
+      }
+
+
+      if (count($variables) > $match)
+      {
+        internal\header_rule_log($i, "get filter doesn't match");
+        continue;
+      }
+
+      internal\header_rule_log($i, "user agent matched");
+    }
+
+    if ($rule->exec)
+    {
+      $file_location = "{$_SERVER['DOCUMENT_ROOT']}{$rule->exec}";
+      internal\header_rule_log($i, "executing handler");
+      if (file_exists($file_location))
+        require_once($file_location);
+      else
+        echo("Unable to locate handler");
+
+      die();
+    }
 
     if ($rule->static
       && ($rule->static !== true
@@ -80,13 +139,13 @@ function route($obj)
     if ($rule->rewrite)
     {
       $route = preg_replace($regexp, $rule->rewrite, $route);
-      internal\header_rule_log($k, "rewrite to", $route);
+      internal\header_rule_log($i, "rewrite to", $route);
     }
 
     if ($location = $rule->found ? $rule->found : $rule->redirect)
     {
       $route = preg_replace($regexp, $location, $route);
-      internal\header_rule_log($k, "redirect to", $route);
+      internal\header_rule_log($i, "redirect to", $route);
 
       header("Location: $route");
       $rule->http_code = $rule->found ? "307 Found" : "301 Redirect";
