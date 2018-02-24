@@ -11,6 +11,8 @@ function header_log($data)
     $data = implode(' ', func_get_args());
 
   global $_HEADER_CONFIG_LINE;
+  if ($_HEADER_CONFIG_LINE == -1)
+    return;
 
   $args =
   [

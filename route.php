@@ -132,6 +132,7 @@ function route($obj)
           @header("Content-Type: {$mime}");
 
           @header('Content-Length: ' . filesize($rule->static));
+          ob_start("ob_gzhandler");
           readfile($rule->static);
         }
       }
