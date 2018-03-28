@@ -2,9 +2,10 @@
 
 require_once('init.php');
 
-$config = load_config($_PHOXY_ROUTE_CONFIG);
-if ($config->quiet)
-  $_HEADER_CONFIG_LINE = -1;
-if ($config->gzip)
-  ini_set('zlib.output_compression_level', $config->gzip);
-handle($config);
+
+$_PHOXY_ROUTE_CONFIG = load_config($_PHOXY_ROUTE_CONFIG_FILE);
+if ($_PHOXY_ROUTE_CONFIG->quiet)
+  $_PHOXY_HEADER_CONFIG_LINE = -1;
+if ($_PHOXY_ROUTE_CONFIG->gzip)
+  ini_set('zlib.output_compression_level', $_PHOXY_ROUTE_CONFIG->gzip);
+handle($_PHOXY_ROUTE_CONFIG);
