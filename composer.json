@@ -1,4 +1,14 @@
 {
+    "name": "phoxy/route",
+    "description": "Streamlined routing configuration for phoxy",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kirill Berezin",
+            "email": "enelar@exsul.net"
+        }
+    ],
     "require": {
         "enelar/phpa2o": "^0.1.3"
     }
