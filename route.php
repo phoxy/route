@@ -97,6 +97,9 @@ function route($obj)
       internal\header_rule_log($i, "user agent matched");
     }
 
+    if ($rule->compress)
+      ob_start("ob_gzhandler");
+
     if ($rule->exec)
     {
       $file_location = "{$_SERVER['DOCUMENT_ROOT']}{$rule->exec}";
@@ -128,12 +131,10 @@ function route($obj)
           $max_age = isset($rule->max_age) ? $rule->max_age : 600;
 
           @header("Last-Modified: {$mtime}");
-          @header("Cache-Control: public, max-age={$max_age}");
+          @header("Cache-Control: public, immutable, max-age={$max_age}");
           @header("Content-Type: {$mime}");
 
           @header('Content-Length: ' . filesize($rule->static));
-          if ($rule->compress)
-            ob_start("ob_gzhandler");
           readfile($rule->static);
         }
       }
@@ -152,6 +153,9 @@ function route($obj)
       header("Location: $route");
       $rule->http_code = $rule->found ? "307 Found" : "301 Redirect";
       $rule->die = true;
+
+      if ($rule->redirect && $rule->max_age)
+        header("Cache-Control: public, immutable, max-age={$rule->max_age}");
     }
 
 

@@ -1,8 +1,15 @@
 <?php
 namespace phoxy\route;
 
-include_once('vendor/autoload.php');
-include_once($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php');
+$_PHOXY_ROUTE_EXPECTED_VENDOR_LOCATIONS =
+[
+  'vendor/autoload.php',
+  $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php',
+];
+
+foreach ($_PHOXY_ROUTE_EXPECTED_VENDOR_LOCATIONS as $file)
+  if (is_file($file))
+    require_once($file);
 
 $_PHOXY_HEADER_CONFIG_LINE = 0;
 function header_log($data)
